@@ -1,80 +1,93 @@
-import { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
-import { useRouter } from 'expo-router';
+import React, { useState } from 'react';
+import { View, Text, Button, StyleSheet } from 'react-native';
+import { Stack } from 'expo-router';
 
-export default function Index() {
-  const router = useRouter();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+const Calculator: React.FC = () => {
+  const [input, setInput] = useState<string>('');
 
-  const handleLogin = () => {
-    if (!email || !password) {
-      Alert.alert('Error', 'Email dan password wajib diisi.');
-    } else {
-      router.push('/home');
+  const handleButtonPress = (value: string) => {
+    setInput(input + value);
+  };
+
+
+  const handleCalculate = async () => {
+    try {
+        const response = await fetch('https://api.mathjs.org/v4/', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ expr: input }),
+          });
+          const result = await response.json();
+          setInput(result.result.toString());
+      setInput(eval(input).toString());
+    } catch (error) {
+      setInput('Error');
     }
   };
 
+  const handleClear = () => {
+    setInput('');
+  };
+
+  
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Login</Text>
+      <Stack.Screen options={{ title: 'Kalkulator' }} />
+      <Text style={styles.display}>{input}</Text>
 
-      <TextInput
-        style={styles.input}
-        placeholder="Email"
-        keyboardType="email-address"
-        autoCapitalize="none"
-        value={email}
-        onChangeText={setEmail}
-      />
+      <View style={styles.buttonRow}>
+        <Button title="1" onPress={() => handleButtonPress('1')} />
+        <Button title="2" onPress={() => handleButtonPress('2')} />
+        <Button title="3" onPress={() => handleButtonPress('3')} />
+        <Button title="+" onPress={() => handleButtonPress('+')} />
+      </View>
 
-      <TextInput
-        style={styles.input}
-        placeholder="Password"
-        secureTextEntry
-        value={password}
-        onChangeText={setPassword}
-      />
+      <View style={styles.buttonRow}>
+        <Button title="4" onPress={() => handleButtonPress('4')} />
+        <Button title="5" onPress={() => handleButtonPress('5')} />
+        <Button title="6" onPress={() => handleButtonPress('6')} />
+        <Button title="-" onPress={() => handleButtonPress('-')} />
+      </View>
 
-      <TouchableOpacity style={styles.button} onPress={handleLogin}>
-        <Text style={styles.buttonText}>Masuk</Text>
-      </TouchableOpacity>
+      <View style={styles.buttonRow}>
+        <Button title="7" onPress={() => handleButtonPress('7')} />
+        <Button title="8" onPress={() => handleButtonPress('8')} />
+        <Button title="9" onPress={() => handleButtonPress('9')} />
+        <Button title="*" onPress={() => handleButtonPress('*')} />
+      </View>
+
+      <View style={styles.buttonRow}>
+        <Button title="0" onPress={() => handleButtonPress('0')} />
+        <Button title="C" onPress={handleClear} />
+        <Button title="=" onPress={handleCalculate} />
+        <Button title="/" onPress={() => handleButtonPress('/')} />
+      </View>
     </View>
   );
-}
+};
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     justifyContent: 'center',
-    paddingHorizontal: 30,
-    backgroundColor: '#f4f4f4',
-  },
-  title: {
-    fontSize: 32,
-    fontWeight: 'bold',
-    marginBottom: 40,
-    textAlign: 'center',
-    color: '#333',
-  },
-  input: {
-    height: 50,
-    borderColor: '#ccc',
-    borderWidth: 1,
-    borderRadius: 12,
-    paddingHorizontal: 15,
-    marginBottom: 20,
+    alignItems: 'center',
     backgroundColor: '#fff',
   },
-  button: {
-    backgroundColor: '#007bff',
-    paddingVertical: 15,
-    borderRadius: 12,
+  display: {
+    fontSize: 40,
+    marginBottom: 20,
+    padding: 10,
+    textAlign: 'right',
+    width: '100%',
+    borderBottomWidth: 1,
+    borderColor: '#ccc',
   },
-  buttonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
-    textAlign: 'center',
+  buttonRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-evenly',
+    width: '80%',
+    marginBottom: 20,
   },
 });
+
+export default Calculator;
